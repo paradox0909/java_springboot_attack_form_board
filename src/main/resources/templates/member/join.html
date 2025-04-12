@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:replace="~{layout/basic :: setContent(~{this::content})}">
+
+    <th:block th:fragment="content">
+
+        <h1 class="mt-4">Join Page</h1>
+
+        <form th:action="@{/joinProc}" method="post" name="joinForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input id="username" type="text" name="username" class="form-control" placeholder="Username" required/>
+                <small id="usernameFeedback" class="form-text text-muted"></small>
+            </div>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input id="name" type="text" name="name" class="form-control" placeholder="Name" required/>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input id="password" type="password" name="password" class="form-control" placeholder="Password" required/>
+            </div>
+            <button type="submit" class="btn btn-primary" id="joinButton" disabled>Join</button>
+        </form>
+
+        <script>
+            document.getElementById('username').addEventListener('input', function() {
+                const username = this.value;
+                const feedback = document.getElementById('usernameFeedback');
+                const joinButton = document.getElementById('joinButton');
+
+                if (username.length > 0) {
+                    fetch(`/checkUsername?username=${username}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data) {
+                                feedback.textContent = 'Username is already taken.';
+                                joinButton.disabled = true;
+                            } else {
+                                feedback.textContent = 'Username is available.';
+                                joinButton.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            feedback.textContent = 'Error checking username.';
+                            joinButton.disabled = true;
+                        });
+                } else {
+                    feedback.textContent = '';
+                    joinButton.disabled = true;
+                }
+            });
+        </script>
+
+    </th:block>
+
+</th:block>
+</html>

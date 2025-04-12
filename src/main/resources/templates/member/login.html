@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:replace="~{layout/basic :: setContent(~{this::content})}">
+
+    <th:block th:fragment="content">
+
+        <h1 class="mt-4">Login Page</h1>
+
+        <form th:action="@{/loginProc}" method="post" name="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input id="username" type="text" name="username" class="form-control" placeholder="id" required/>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input id="password" type="password" name="password" class="form-control" placeholder="password" required/>
+            </div>
+            <input type="hidden" name="_csrf" value="{{_csrf.token}}"/>
+            <button type="submit" class="btn btn-primary">Login</button>
+            <button class="btn btn-secondary" onclick="location.href='/join'">Sign up</button>
+        </form>
+
+    </th:block>
+
+</th:block>
+</html>
