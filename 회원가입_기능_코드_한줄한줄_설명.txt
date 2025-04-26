@@ -1,0 +1,176 @@
+회원가입 기능 코드 한 줄 한 줄 설명
+================================
+
+1. MemberController.java의 회원가입 관련 코드 설명:
+@GetMapping("/join")
+- GET 방식으로 "/join" URL에 접근했을 때 실행되는 메서드
+- 회원가입 페이지를 보여주는 역할
+
+public String join()
+- 회원가입 페이지를 보여주는 메서드
+- 반환값: 뷰 이름
+
+return "member/join"
+- member/join 뷰를 반환
+- 회원가입 폼이 있는 페이지를 보여줌
+
+@PostMapping("/joinProc")
+- POST 방식으로 "/joinProc" URL에 접근했을 때 실행되는 메서드
+- 실제 회원가입 처리를 담당
+
+public String joinProcess(MemberDTO memberDTO)
+- 회원가입 처리 메서드
+- MemberDTO 객체를 파라미터로 받아 회원 정보를 전달
+- 반환값: 리다이렉트할 URL
+
+log.info("member dto..." + memberDTO)
+- 로그에 회원 정보 객체 출력
+- 디버깅 목적의 로그 기록
+
+long result = memberService.join(memberDTO)
+- 회원가입 처리를 서비스 계층에 위임
+- memberService의 join 메서드 호출
+- 결과값으로 생성된 회원의 ID 또는 오류 코드 받음
+
+if (result == 0)
+- 회원가입 실패 시 조건 검사
+- 중복된 사용자 이름인 경우 0 반환
+
+return "redirect:/join"
+- 회원가입 실패 시 회원가입 페이지로 리다이렉트
+- 다시 가입 정보를 입력하도록 유도
+
+else
+- 회원가입 성공 시 실행
+
+return "redirect:/login"
+- 회원가입 성공 시 로그인 페이지로 리다이렉트
+- 가입 완료 후 로그인 유도
+
+@GetMapping("/checkUsername")
+- GET 방식으로 "/checkUsername" URL에 접근했을 때 실행되는 메서드
+- 사용자 이름 중복 체크 역할
+
+public ResponseEntity<Boolean> checkUsername(@RequestParam String username)
+- 사용자 이름 중복 체크 메서드
+- @RequestParam으로 URL 파라미터 username 받음
+- 반환값: HTTP 응답으로 Boolean 값 반환
+
+boolean isTaken = memberService.isUsernameTaken(username)
+- 사용자 이름 중복 여부 확인을 서비스 계층에 위임
+- true: 이미 사용 중, false: 사용 가능
+
+return ResponseEntity.ok(isTaken)
+- 중복 여부를 HTTP 응답으로 반환
+- HTTP 상태 코드 200(OK)와 함께 결과 전달
+
+2. MemberServiceImpl.java의 회원가입 관련 코드 설명:
+@Override
+public long join(MemberDTO memberDTO)
+- 회원가입 처리 메서드
+- MemberDTO 객체를 파라미터로 받아 회원 정보 처리
+- 반환값: 생성된 회원의 ID 또는 오류 코드
+
+if (memberRepository.existsByUsername(memberDTO.getUsername()))
+- 사용자 이름 중복 체크
+- 레포지토리의 existsByUsername 메서드 호출
+- 이미 존재하는 사용자 이름인지 확인
+
+return 0
+- 중복된 사용자 이름인 경우 0 반환
+- 회원가입 실패 의미
+
+Member member = Member.builder()
+- Member 엔티티 생성을 위한 빌더 패턴 시작
+- Builder 패턴으로 객체 생성
+
+.username(memberDTO.getUsername())
+- 사용자 이름 설정
+- DTO에서 값을 가져와 설정
+
+.password(bCryptPasswordEncoder.encode(memberDTO.getPassword()))
+- 비밀번호 암호화 후 설정
+- BCryptPasswordEncoder를 사용하여 암호화
+
+.name(memberDTO.getName())
+- 실제 이름 설정
+- DTO에서 값을 가져와 설정
+
+.role("ROLE_USER")
+- 기본 권한을 "ROLE_USER"로 설정
+- 일반 사용자 권한 부여
+
+.build()
+- 빌더 패턴 종료
+- Member 엔티티 객체 생성
+
+memberRepository.save(member)
+- 생성된 Member 엔티티를 데이터베이스에 저장
+- JPA Repository의 save 메서드 호출
+
+return member.getId()
+- 저장된 회원의 ID 반환
+- 회원가입 성공 의미
+
+@Override
+public boolean isUsernameTaken(String username)
+- 사용자 이름 중복 체크 메서드
+- 사용자 이름을 파라미터로 받음
+- 반환값: 중복 여부(boolean)
+
+return memberRepository.existsByUsername(username)
+- 레포지토리의 existsByUsername 메서드 호출
+- true: 이미 사용 중, false: 사용 가능
+
+3. Member.java의 주요 필드 설명:
+@Entity
+- JPA 엔티티임을 나타냄
+- 데이터베이스 테이블과 매핑
+
+@Builder
+- 빌더 패턴 지원
+- 객체 생성을 위한 빌더 메서드 제공
+
+@AllArgsConstructor
+- 모든 필드를 파라미터로 갖는 생성자 자동 생성
+- 빌더 패턴과 함께 사용
+
+@NoArgsConstructor
+- 파라미터 없는 기본 생성자 자동 생성
+- JPA에서 필요로 함
+
+@Getter
+- 모든 필드에 대한 getter 메서드 자동 생성
+- 필드값 조회 가능
+
+@Id
+- 기본키(Primary Key) 필드 지정
+- 엔티티의 식별자
+
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+- 기본키 생성 전략 지정
+- AUTO_INCREMENT와 같은 데이터베이스 자동 증가 기능 사용
+
+private int id
+- 회원 고유 식별자
+- 데이터베이스에서 자동 생성되는 ID
+
+@Column(unique = true)
+- 해당 필드가 유니크해야 함을 지정
+- 데이터베이스에서 유니크 제약조건 생성
+
+private String username
+- 사용자 로그인 아이디
+- 유니크 제약조건으로 중복 불가
+
+private String password
+- 사용자 비밀번호
+- 암호화되어 저장
+
+private String name
+- 사용자 실제 이름
+- 화면에 표시될 이름
+
+private String role
+- 사용자 권한
+- "ROLE_USER", "ROLE_ADMIN" 등의 값 가짐 

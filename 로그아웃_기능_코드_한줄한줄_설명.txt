@@ -1,0 +1,66 @@
+로그아웃 기능 코드 한 줄 한 줄 설명
+==============================
+
+1. MemberController.java의 로그아웃 관련 코드 설명:
+@GetMapping("/logout")
+- GET 방식으로 "/logout" URL에 접근했을 때 실행되는 메서드
+- 로그아웃 처리를 담당하는 메서드 매핑
+
+public String logout(HttpServletRequest request, HttpServletResponse response)
+- 로그아웃 처리 메서드
+- HttpServletRequest와 HttpServletResponse를 파라미터로 받음
+- 반환값: 리다이렉트할 URL
+
+Authentication authentication = SecurityContextHolder.getContext().getAuthentication()
+- 현재 인증된 사용자의 인증 정보를 가져옴
+- SecurityContextHolder에서 현재 보안 컨텍스트를 통해 접근
+
+if (authentication != null)
+- 인증 정보가 존재하는 경우 조건 검사
+- 로그인된 상태인지 확인
+
+new SecurityContextLogoutHandler().logout(request, response, authentication)
+- Spring Security의 SecurityContextLogoutHandler를 사용한 로그아웃 처리
+- 세션 무효화, 쿠키 삭제, 보안 컨텍스트 초기화 등을 수행
+- request, response, authentication 정보를 전달
+
+return "redirect:/"
+- 로그아웃 후 메인 페이지로 리다이렉트
+- "redirect:" 접두사는 리다이렉트를 지시함
+
+2. SecurityConfig.java의 로그아웃 관련 설정:
+http.logout((auth) -> auth.logoutUrl("/logout")
+- 로그아웃 관련 설정 시작
+- 로그아웃 처리를 담당하는 URL 설정
+- 사용자가 /logout으로 접근하면 로그아웃 처리
+
+.logoutSuccessUrl("/"))
+- 로그아웃 성공 시 이동할 URL 설정
+- 메인 페이지("/")로 리다이렉트
+
+3. 로그아웃 처리 흐름:
+1) 사용자가 /logout URL로 접근
+- MemberController의 logout() 메서드 실행
+- 또는 Spring Security의 기본 로그아웃 처리 실행
+
+2) 현재 인증 정보 확인
+- SecurityContextHolder에서 인증 정보 조회
+- 로그인 상태인지 확인
+
+3) SecurityContextLogoutHandler를 통한 로그아웃 처리
+- 세션 무효화 (HttpSession invalidate)
+- SecurityContext 초기화
+- SecurityContextHolder 클리어
+- 인증 관련 쿠키 삭제
+- CSRF 토큰 제거
+
+4) 로그아웃 완료 후
+- 설정된 성공 페이지로 리다이렉트
+- 기본값은 메인 페이지("/")
+
+4. 보안 관련 주요 특징:
+- 세션 기반 인증의 안전한 종료
+- 모든 보안 관련 상태 초기화
+- 세션 고정 공격 방지
+- 리다이렉트를 통한 명확한 사용자 경험
+- SecurityContextHolder를 통한 중앙 집중식 보안 관리 

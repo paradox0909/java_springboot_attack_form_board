@@ -43,6 +43,8 @@ public class BoardController {
     public void register(Model model) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Member member = memberService.getMember(username);
+        log.info("member: " + username);
+        log.info("member: " + member.getId());
         model.addAttribute("userId", member.getId());
     }
 
