@@ -1,6 +1,20 @@
 게시글 작성 기능 상세 설명
 ===========================
 
+[관련 파일 목록]
+주요 파일:
+- BoardController.java: 컨트롤러
+- BoardService.java: 서비스
+- BoardRepository.java: 레포지토리
+- Board.java: 엔티티
+- BoardDTO.java: DTO
+
+연관 파일:
+- register.html: 작성 화면
+- Member.java: 작성자 엔티티
+- MemberService.java: 회원 서비스
+- application.properties: 설정 파일
+
 1. BoardController.java의 게시글 작성 처리:
 @GetMapping("/register")
 - GET 방식으로 "/board/register" URL에 접근 시 실행

@@ -1,6 +1,21 @@
 게시글 상세 조회 기능 상세 설명
 ===========================
 
+[관련 파일 목록]
+주요 파일:
+- BoardController.java: 컨트롤러
+- BoardService.java: 서비스
+- BoardRepository.java: 레포지토리
+- Board.java: 엔티티
+- BoardDTO.java: DTO
+
+연관 파일:
+- read.html: 상세 조회 화면
+- PageRequestDTO.java: 페이징 정보
+- ReplyDTO.java: 댓글 정보
+- MemberDTO.java: 작성자 정보
+- application.properties: 설정 파일
+
 1. BoardController.java의 상세 조회 처리:
 @GetMapping({"/read", "/modify"})
 - GET 방식으로 "/board/read" 또는 "/board/modify" URL에 접근 시 실행
