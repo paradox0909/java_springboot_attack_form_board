@@ -1,0 +1,151 @@
+게시판 기능 코드 한 줄 한 줄 설명
+==============================
+
+1. 게시글 목록 조회 기능:
+@GetMapping("/list")
+- GET 방식으로 "/board/list" URL에 접근했을 때 실행되는 메서드
+- 게시글 목록을 보여주는 역할
+
+public void list(PageRequestDTO pageRequestDTO, Model model)
+- 게시글 목록 조회 메서드
+- pageRequestDTO: 페이징 및 검색 조건을 담은 객체
+- Model: 뷰에 데이터를 전달하기 위한 객체
+
+log.info("list............." + pageRequestDTO)
+- 페이징 요청 정보를 로그로 출력
+- 디버깅 목적의 로그 기록
+
+model.addAttribute("result", boardService.getList(pageRequestDTO))
+- 게시글 목록을 조회하여 모델에 추가
+- boardService.getList()를 통해 페이징된 게시글 목록 조회
+
+String username = SecurityContextHolder.getContext().getAuthentication().getName()
+- 현재 로그인한 사용자의 이름을 가져옴
+- Spring Security의 SecurityContextHolder를 통해 인증 정보 접근
+
+model.addAttribute("username", username)
+- 사용자 이름을 모델에 추가
+- 뷰에서 현재 로그인한 사용자 정보 표시에 사용
+
+2. 게시글 상세 조회 기능:
+@GetMapping({"/read", "/modify"})
+- GET 방식으로 "/board/read" 또는 "/board/modify" URL에 접근 시 실행
+- 동일한 메서드로 읽기와 수정 화면을 처리
+
+public void read(@ModelAttribute("requestDTO") PageRequestDTO pageRequestDTO, Long bno, Model model)
+- 게시글 상세 조회 메서드
+- pageRequestDTO: 페이징 정보 (목록으로 돌아갈 때 사용)
+- bno: 게시글 번호
+- Model: 뷰에 데이터를 전달하기 위한 객체
+
+log.info("bno: " + bno)
+- 조회하려는 게시글 번호를 로그로 출력
+- 디버깅 목적의 로그 기록
+
+BoardDTO boardDTO = boardService.get(bno)
+- 게시글 번호로 게시글 정보를 조회
+- boardService.get()을 통해 상세 정보 조회
+
+model.addAttribute("dto", boardDTO)
+- 조회된 게시글 정보를 모델에 추가
+- 뷰에서 게시글 정보 표시에 사용
+
+3. 게시글 작성 기능:
+@GetMapping("/register")
+- GET 방식으로 "/board/register" URL에 접근 시 실행
+- 게시글 작성 폼을 보여주는 역할
+
+public void register(Model model)
+- 게시글 작성 폼을 보여주는 메서드
+- Model: 뷰에 데이터를 전달하기 위한 객체
+
+String username = SecurityContextHolder.getContext().getAuthentication().getName()
+- 현재 로그인한 사용자의 이름을 가져옴
+- 작성자 정보로 사용
+
+Member member = memberService.getMember(username)
+- 사용자 이름으로 회원 정보를 조회
+- 작성자의 상세 정보 획득
+
+model.addAttribute("userId", member.getId())
+- 작성자 ID를 모델에 추가
+- 뷰에서 hidden 필드 등으로 사용
+
+@PostMapping("/register")
+- POST 방식으로 "/board/register" URL에 접근 시 실행
+- 실제 게시글 등록을 처리
+
+public String registerPost(BoardDTO dto, RedirectAttributes redirectAttributes)
+- 게시글 등록 처리 메서드
+- dto: 등록할 게시글 정보
+- RedirectAttributes: 리다이렉트 시 데이터 전달용
+
+Long bno = boardService.register(dto)
+- 게시글을 데이터베이스에 등록
+- 등록된 게시글의 번호 반환
+
+redirectAttributes.addFlashAttribute("msg", bno)
+- 등록 완료 메시지를 리다이렉트 시 전달
+- 일회성 데이터로 전달됨
+
+return "redirect:/board/list"
+- 등록 완료 후 목록 페이지로 리다이렉트
+
+4. 게시글 수정 기능:
+@PostMapping("/modify")
+- POST 방식으로 "/board/modify" URL에 접근 시 실행
+- 게시글 수정을 처리
+
+public String modify(BoardDTO dto, @ModelAttribute("requestDTO") PageRequestDTO requestDTO, RedirectAttributes redirectAttributes)
+- 게시글 수정 처리 메서드
+- dto: 수정할 게시글 정보
+- requestDTO: 페이징 정보
+- RedirectAttributes: 리다이렉트 시 데이터 전달용
+
+boardService.modify(dto)
+- 게시글 정보를 업데이트
+- 데이터베이스의 게시글 정보 수정
+
+redirectAttributes.addAttribute("page", requestDTO.getPage())
+- 페이지 정보를 리다이렉트 시 전달
+- 수정 완료 후 원래 페이지로 돌아가기 위함
+
+redirectAttributes.addAttribute("type", requestDTO.getType())
+- 검색 타입 정보를 리다이렉트 시 전달
+- 검색 상태 유지를 위함
+
+redirectAttributes.addAttribute("keyword", requestDTO.getKeyword())
+- 검색 키워드를 리다이렉트 시 전달
+- 검색 상태 유지를 위함
+
+redirectAttributes.addAttribute("bno",dto.getBno())
+- 게시글 번호를 리다이렉트 시 전달
+- 수정된 게시글 조회를 위함
+
+return "redirect:/board/read"
+- 수정 완료 후 상세 조회 페이지로 리다이렉트
+
+5. 게시글 삭제 기능:
+@PostMapping("/remove")
+- POST 방식으로 "/board/remove" URL에 접근 시 실행
+- 게시글 삭제를 처리
+
+public String remove(long bno, RedirectAttributes redirectAttributes)
+- 게시글 삭제 처리 메서드
+- bno: 삭제할 게시글 번호
+- RedirectAttributes: 리다이렉트 시 데이터 전달용
+
+log.info("bno: " + bno)
+- 삭제하려는 게시글 번호를 로그로 출력
+- 디버깅 목적의 로그 기록
+
+boardService.removeWithReplies(bno)
+- 게시글과 관련된 댓글들을 함께 삭제
+- 댓글이 있는 게시글도 안전하게 삭제
+
+redirectAttributes.addFlashAttribute("msg", bno)
+- 삭제 완료 메시지를 리다이렉트 시 전달
+- 일회성 데이터로 전달됨
+
+return "redirect:/board/list"
+- 삭제 완료 후 목록 페이지로 리다이렉트 

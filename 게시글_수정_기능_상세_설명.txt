@@ -1,0 +1,93 @@
+게시글 수정 기능 상세 설명
+===========================
+
+1. BoardController.java의 게시글 수정 처리:
+@PostMapping("/modify")
+- POST 방식으로 "/board/modify" URL에 접근 시 실행
+- 게시글 수정을 처리
+
+public String modify(BoardDTO dto, @ModelAttribute("requestDTO") PageRequestDTO requestDTO, RedirectAttributes redirectAttributes)
+- 게시글 수정 처리 메서드
+- dto: 수정할 게시글 정보
+- requestDTO: 페이징 정보
+- RedirectAttributes: 리다이렉트 시 데이터 전달용
+
+boardService.modify(dto)
+- 게시글 정보를 업데이트
+- 데이터베이스의 게시글 정보 수정
+
+redirectAttributes.addAttribute("page", requestDTO.getPage())
+- 페이지 정보를 리다이렉트 시 전달
+- 수정 완료 후 원래 페이지로 돌아가기 위함
+
+redirectAttributes.addAttribute("type", requestDTO.getType())
+- 검색 타입 정보를 리다이렉트 시 전달
+- 검색 상태 유지를 위함
+
+redirectAttributes.addAttribute("keyword", requestDTO.getKeyword())
+- 검색 키워드를 리다이렉트 시 전달
+- 검색 상태 유지를 위함
+
+redirectAttributes.addAttribute("bno",dto.getBno())
+- 게시글 번호를 리다이렉트 시 전달
+- 수정된 게시글 조회를 위함
+
+return "redirect:/board/read"
+- 수정 완료 후 상세 조회 페이지로 리다이렉트
+
+2. BoardService.java의 게시글 수정 처리:
+public void modify(BoardDTO boardDTO)
+- 게시글 수정 처리 메서드
+- boardDTO: 수정할 게시글 정보
+
+Board board = boardRepository.getOne(boardDTO.getBno())
+- 수정할 게시글 엔티티 조회
+- getOne: 프록시 객체 반환
+
+board.changeTitle(boardDTO.getTitle())
+- 게시글 제목 변경
+- 엔티티의 변경 메서드 호출
+
+board.changeContent(boardDTO.getContent())
+- 게시글 내용 변경
+- 엔티티의 변경 메서드 호출
+
+3. Board.java의 수정 관련 메서드:
+public void changeTitle(String title)
+- 게시글 제목 변경 메서드
+- 제목만 변경 가능
+
+public void changeContent(String content)
+- 게시글 내용 변경 메서드
+- 내용만 변경 가능
+
+4. BoardRepository.java의 수정 관련 처리:
+@Query("select b, w from Board b left join b.writer w where b.bno=:bno")
+- 게시글과 작성자 정보를 함께 조회하는 쿼리
+- 수정 권한 확인을 위해 작성자 정보 필요
+
+Object getBoardWithWriter(@Param("bno") Long bno)
+- 게시글 번호로 게시글과 작성자 정보 조회
+- @Param: JPQL의 파라미터 바인딩
+
+5. 관련 파일 및 참고사항:
+- modify.html
+  - 게시글 수정 폼
+  - 제목, 내용 수정 필드
+  - CSRF 토큰 포함
+  - 원본 데이터 표시
+
+- BoardDTO.java
+  - 게시글 정보 전달 객체
+  - 제목, 내용 수정 정보 포함
+  - 데이터 검증 어노테이션 포함
+
+- PageRequestDTO.java
+  - 페이징 정보
+  - 검색 조건
+  - 목록으로 돌아갈 때 사용
+
+- application.properties
+  - 데이터베이스 연결 설정
+  - JPA 설정
+  - 로깅 설정 

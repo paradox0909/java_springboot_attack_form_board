@@ -17,7 +17,7 @@ public class MemberServiceImpl implements MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
-    public long join(MemberDTO memberDTO) {
+    public long join(MemberCustomUserDetailsDTO memberDTO) {
 
         if (memberRepository.existsByUsername(memberDTO.getUsername())) {
             return 0;

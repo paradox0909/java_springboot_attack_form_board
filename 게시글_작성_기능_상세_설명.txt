@@ -1,0 +1,129 @@
+게시글 작성 기능 상세 설명
+===========================
+
+1. BoardController.java의 게시글 작성 처리:
+@GetMapping("/register")
+- GET 방식으로 "/board/register" URL에 접근 시 실행
+- 게시글 작성 폼을 보여주는 역할
+
+public void register(Model model)
+- 게시글 작성 폼을 보여주는 메서드
+- Model: 뷰에 데이터를 전달하기 위한 객체
+
+String username = SecurityContextHolder.getContext().getAuthentication().getName()
+- 현재 로그인한 사용자의 이름을 가져옴
+- Spring Security의 SecurityContextHolder를 통해 인증 정보 접근
+
+Member member = memberService.getMember(username)
+- 사용자 이름으로 회원 정보를 조회
+- 작성자의 상세 정보 획득
+
+model.addAttribute("userId", member.getId())
+- 작성자 ID를 모델에 추가
+- 뷰에서 hidden 필드 등으로 사용
+
+@PostMapping("/register")
+- POST 방식으로 "/board/register" URL에 접근 시 실행
+- 실제 게시글 등록을 처리
+
+public String registerPost(BoardDTO dto, RedirectAttributes redirectAttributes)
+- 게시글 등록 처리 메서드
+- dto: 등록할 게시글 정보
+- RedirectAttributes: 리다이렉트 시 데이터 전달용
+
+Long bno = boardService.register(dto)
+- 게시글을 데이터베이스에 등록
+- 등록된 게시글의 번호 반환
+
+redirectAttributes.addFlashAttribute("msg", bno)
+- 등록 완료 메시지를 리다이렉트 시 전달
+- 일회성 데이터로 전달됨
+
+return "redirect:/board/list"
+- 등록 완료 후 목록 페이지로 리다이렉트
+
+2. BoardService.java의 게시글 등록 처리:
+public Long register(BoardDTO dto)
+- 게시글 등록 처리 메서드
+- dto: 등록할 게시글 정보
+- 반환값: 등록된 게시글 번호
+
+Board board = dtoToEntity(dto)
+- DTO를 엔티티로 변환
+- 게시글 정보와 작성자 정보 포함
+
+boardRepository.save(board)
+- 게시글 엔티티를 데이터베이스에 저장
+- JPA Repository의 save 메서드 호출
+
+return board.getBno()
+- 저장된 게시글의 번호 반환
+- 등록 성공 의미
+
+3. Board.java의 엔티티 구조:
+@Entity
+- JPA 엔티티임을 나타냄
+- 데이터베이스 테이블과 매핑
+
+@Builder
+- 빌더 패턴 지원
+- 객체 생성을 위한 빌더 메서드 제공
+
+@AllArgsConstructor
+- 모든 필드를 파라미터로 갖는 생성자 자동 생성
+- 빌더 패턴과 함께 사용
+
+@NoArgsConstructor
+- 파라미터 없는 기본 생성자 자동 생성
+- JPA에서 필요로 함
+
+@Getter
+- 모든 필드에 대한 getter 메서드 자동 생성
+- 필드값 조회 가능
+
+@Id
+- 기본키(Primary Key) 필드 지정
+- 엔티티의 식별자
+
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+- 기본키 생성 전략 지정
+- AUTO_INCREMENT와 같은 데이터베이스 자동 증가 기능 사용
+
+private Long bno
+- 게시글 번호
+- 데이터베이스에서 자동 생성되는 ID
+
+private String title
+- 게시글 제목
+
+private String content
+- 게시글 내용
+
+@ManyToOne(fetch = FetchType.LAZY)
+- 다대일 관계 설정
+- 지연 로딩 방식 사용
+
+private Member writer
+- 게시글 작성자
+- Member 엔티티와 연관 관계
+
+4. 관련 파일 및 참고사항:
+- register.html
+  - 게시글 작성 폼
+  - 제목, 내용 입력 필드
+  - CSRF 토큰 포함
+  - 작성자 정보 hidden 필드
+
+- BoardDTO.java
+  - 게시글 정보 전달 객체
+  - 제목, 내용, 작성자 정보 포함
+  - 데이터 검증 어노테이션 포함
+
+- Member.java
+  - 작성자 정보 엔티티
+  - 작성자 ID, 이름 등 포함
+
+- application.properties
+  - 데이터베이스 연결 설정
+  - JPA 설정
+  - 로깅 설정 

@@ -1,0 +1,99 @@
+게시글 상세 조회 기능 상세 설명
+===========================
+
+1. BoardController.java의 상세 조회 처리:
+@GetMapping({"/read", "/modify"})
+- GET 방식으로 "/board/read" 또는 "/board/modify" URL에 접근 시 실행
+- 동일한 메서드로 읽기와 수정 화면을 처리
+
+public void read(@ModelAttribute("requestDTO") PageRequestDTO pageRequestDTO, Long bno, Model model)
+- 게시글 상세 조회 메서드
+- pageRequestDTO: 페이징 정보 (목록으로 돌아갈 때 사용)
+- bno: 게시글 번호
+- Model: 뷰에 데이터를 전달하기 위한 객체
+
+log.info("bno: " + bno)
+- 조회하려는 게시글 번호를 로그로 출력
+- 디버깅 목적의 로그 기록
+
+BoardDTO boardDTO = boardService.get(bno)
+- 게시글 번호로 게시글 정보를 조회
+- boardService.get()을 통해 상세 정보 조회
+
+model.addAttribute("dto", boardDTO)
+- 조회된 게시글 정보를 모델에 추가
+- 뷰에서 게시글 정보 표시에 사용
+
+2. BoardService.java의 상세 조회 처리:
+public BoardDTO get(Long bno)
+- 게시글 번호로 게시글 정보를 조회하는 메서드
+- 반환값: 게시글 정보 DTO
+
+Object result = boardRepository.getBoardByBno(bno)
+- 게시글 번호로 게시글, 작성자, 댓글 수 조회
+- Object[]: 게시글, 작성자, 댓글 수 정보
+
+Object[] arr = (Object[])result
+- Object[]로 형변환
+- 배열의 각 요소에 게시글, 작성자, 댓글 수 정보가 담김
+
+return entityToDTO((Board)arr[0], (Member)arr[1], (Long)arr[2])
+- 조회된 정보를 DTO로 변환하여 반환
+- 게시글, 작성자, 댓글 수 정보를 포함
+
+3. BoardRepository.java의 상세 조회 처리:
+@Query("select b, w, count(r) from Board b left join b.writer w left join Reply r on r.board = b where b.bno = :bno group by b")
+- 게시글, 작성자, 댓글 수를 함께 조회하는 쿼리
+- left join으로 댓글이 없는 게시글도 조회
+- 그룹화를 통한 댓글 수 계산
+
+Object getBoardByBno(@Param("bno") Long bno)
+- 게시글 번호로 게시글, 작성자, 댓글 수 조회
+- @Param: JPQL의 파라미터 바인딩
+
+4. BoardDTO.java의 구조:
+private Long bno
+- 게시글 번호
+- 기본키
+
+private String title
+- 게시글 제목
+
+private String content
+- 게시글 내용
+
+private String writerEmail
+- 작성자 이메일
+- Member 엔티티의 username
+
+private String writerName
+- 작성자 이름
+- Member 엔티티의 name
+
+private LocalDateTime regDate
+- 등록일
+
+private LocalDateTime modDate
+- 수정일
+
+private int replyCount
+- 댓글 수
+
+5. 관련 파일 및 참고사항:
+- read.html
+  - 게시글 상세 내용 표시
+  - 작성자 정보 표시
+  - 댓글 목록 표시
+  - 수정/삭제 버튼
+
+- PageRequestDTO.java
+  - 페이징 정보
+  - 목록으로 돌아갈 때 사용
+
+- ReplyDTO.java
+  - 댓글 정보 전달 객체
+  - 댓글 목록 표시에 사용
+
+- MemberDTO.java
+  - 작성자 정보 전달 객체
+  - 작성자 정보 표시에 사용 
